@@ -915,3 +915,22 @@ void test_status_ignore__filename_with_cr(void)
 	cl_git_pass(git_ignore_path_is_ignored(&ignored, g_repo, "Icon"));
 	cl_assert_equal_i(1, ignored);
 }
+
+void test_status_ignore__subdir_doesnt_match_above(void)
+{
+	int ignored;
+
+	g_repo = cl_git_sandbox_init("empty_standard_repo");
+
+	cl_git_pass(p_mkdir("empty_standard_repo/src", 0777));
+	cl_git_pass(p_mkdir("empty_standard_repo/src/src", 0777));
+	cl_git_mkfile("empty_standard_repo/src/.gitignore", "src\n");
+	cl_git_mkfile("empty_standard_repo/.gitignore", "");
+
+	cl_git_pass(git_ignore_path_is_ignored(&ignored, g_repo, "src/test.txt"));
+	cl_assert_equal_i(0, ignored);
+	cl_git_pass(git_ignore_path_is_ignored(&ignored, g_repo, "src/src/test.txt"));
+	cl_assert_equal_i(1, ignored);
+	cl_git_pass(git_ignore_path_is_ignored(&ignored, g_repo, "src/foo/test.txt"));
+	cl_assert_equal_i(0, ignored);
+}
