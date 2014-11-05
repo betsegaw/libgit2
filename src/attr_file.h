@@ -53,6 +53,7 @@ typedef struct {
 	char *pattern;
 	size_t length;
 	char *containing_dir;
+	size_t containing_dir_length;
 	unsigned int flags;
 } git_attr_fnmatch;
 

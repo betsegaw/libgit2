@@ -352,6 +352,15 @@ bool git_attr_fnmatch__match(
 	 * use it for paths inside that directory. We can thus return
 	 * a non-match if the prefixes don't match.
 	 */
+	if (match->containing_dir) {
+		if (match->flags & GIT_ATTR_FNMATCH_ICASE) {
+			if (git__strncasecmp(path->path, match->containing_dir, match->containing_dir_length))
+				return 0;
+		} else {
+			if (git__prefixcmp(path->path, match->containing_dir))
+				return 0;
+		}
+	}
 	if (match->containing_dir && git__prefixcmp(path->path, match->containing_dir))
 		return 0;
 
@@ -598,9 +607,12 @@ int git_attr_fnmatch__parse(
 
 	if (context) {
 		char *slash = strchr(context, '/');
+		size_t len;
 		if (slash) {
 			/* include the slash for easier matching */
-			spec->containing_dir = git_pool_strndup(pool, context, slash - context + 1);
+			len = slash - context + 1;
+			spec->containing_dir = git_pool_strndup(pool, context, len);
+			spec->containing_dir_length = len;
 		}
 	}
 
